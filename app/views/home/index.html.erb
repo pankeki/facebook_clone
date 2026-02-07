@@ -1,33 +1,38 @@
-<h1 class="text-3xl font-bold text-blue-600 mb-4">My Facebook Clone</h1>
-
-<% if current_user %>
-  <div class="mb-4">
-    <%= link_to "New Post", new_post_path, class: "bg-blue-500 text-white px-4 py-2 rounded" %>
-    <%= link_to "Log Out", destroy_user_session_path, method: :delete, class: "ml-2 bg-gray-500 text-white px-4 py-2 rounded" %>
-  </div>
-
-  <h2 class="text-2xl font-bold mt-6 mb-2">Feed</h2>
-
-  <% Post.all.order(created_at: :desc).each do |post| %>
-    <% user_like = post.likes.find_by(user: current_user) %>
-
-    <div class="border rounded p-4 mb-4 bg-white shadow">
-      <p class="font-semibold"><%= post.user.email %></p>
-      <p class="mt-2"><%= post.body %></p>
-      <p class="text-gray-500 text-sm mt-2"><%= post.created_at.strftime("%b %d, %Y %H:%M") %></p>
-
-      <p class="mt-2">
-        <%= pluralize(post.likes.count, "Like") %>
-        <% if user_like %>
-          <%= button_to "Unlike", post_like_path(post_id: post.id, id: user_like.id), method: :delete, class: "ml-2 bg-red-500 text-white px-2 py-1 rounded" %>
-        <% else %>
-          <%= button_to "Like", post_likes_path(post_id: post.id), method: :post, class: "ml-2 bg-blue-500 text-white px-2 py-1 rounded" %>
-        <% end %>
-      </p>
+<div class="min-h-screen bg-gray-100">
+  <!-- Navbar -->
+  <nav class="bg-blue-600 text-white px-6 py-3 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Facebook</h1>
+    <div class="flex items-center gap-4">
+      <span class="text-sm"><%= current_user.email %></span>
+      <%= link_to "New Post", new_post_path, class: "bg-white text-blue-600 px-3 py-1 rounded font-semibold" %>
+      <%= link_to "Log out", destroy_user_session_path, method: :delete, class: "underline" %>
     </div>
-  <% end %>
+  </nav>
 
-<% else %>
-  <%= link_to "Sign Up", new_user_registration_path, class: "bg-green-500 text-white px-4 py-2 rounded" %>
-  <%= link_to "Log In", new_user_session_path, class: "ml-2 bg-gray-500 text-white px-4 py-2 rounded" %>
-<% end %>
+  <!-- Feed -->
+  <div class="max-w-xl mx-auto mt-6 space-y-4">
+    <% @posts.each do |post| %>
+      <div class="bg-white p-4 rounded shadow">
+        <p class="font-semibold"><%= post.user.email %></p>
+        <p class="mt-2"><%= post.body %></p>
+        <p class="text-gray-500 text-sm mt-2">
+          <%= post.created_at.strftime("%b %d, %Y %H:%M") %>
+        </p>
+
+        <div class="mt-2 flex items-center gap-2">
+          <span class="text-sm"><%= pluralize(post.likes.count, "Like") %></span>
+
+          <% if current_user.likes.exists?(post: post) %>
+            <%= button_to "Unlike", post_like_path(post, post.likes.find_by(user: current_user)),
+                  method: :delete,
+                  class: "text-red-600 text-sm" %>
+          <% else %>
+            <%= button_to "Like", post_likes_path(post),
+                  method: :post,
+                  class: "text-blue-600 text-sm" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
